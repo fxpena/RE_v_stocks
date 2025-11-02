@@ -6,20 +6,22 @@ from datetime import datetime
 
 def load_state_data(directory):
     """
-    Load and merge state house price index (HPI) data from CSV files in the 
-    specified directory.
+    Download and merge state house price index (HPI) data from FRED website.
 
     Parameters:
-    directory (str): Path to the directory containing state HPI CSV files.
+    directory (str): Path to the directory containing state abbreviations.
 
     Returns:
     pd.DataFrame: HPI data for all states. Index is datetime.
     """
+    baseurl = 'https://fred.stlouisfed.org/graph/fredgraph.csv?&id='
+    state_abbreviations = pd.read_csv(
+        os.path.join(directory, 'state_abbrev.csv'))['Code'].tolist()
     frames = []
-    for file in os.listdir(directory):
-        if file.endswith('.csv'):
-            df = pd.read_csv(os.path.join(directory, file), index_col=0)
-            frames.append(df)
+    for state in state_abbreviations:
+        url = baseurl + state + 'STHPI'
+        df = pd.read_csv(url, index_col=0)
+        frames.append(df)
     merged = pd.concat(frames, axis=1)
     merged.index = pd.to_datetime(merged.index)
 
